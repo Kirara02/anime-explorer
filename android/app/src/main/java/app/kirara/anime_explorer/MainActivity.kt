@@ -1,4 +1,4 @@
-package com.animeexplorer
+package app.kirara.anime_explorer
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
