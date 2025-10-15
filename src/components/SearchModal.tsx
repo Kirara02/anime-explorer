@@ -17,9 +17,58 @@ import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { Anime, BaseResponse } from '../types/jikan';
 import { useTheme } from '../theme/ThemeContext';
 import { useApi } from '../hooks/useApi';
+import { useIsFavorited } from '../store/favorites_store';
 import { COLORS } from '../constants';
 import type { Theme } from '@react-navigation/native';
 import { searchAnime } from '../services';
+
+// Separate component to avoid hook call issues in renderItem
+function SearchModalItem({
+  item,
+  onSelect,
+  onClose,
+  styles
+}: {
+  item: Anime;
+  onSelect: (anime: Anime) => void;
+  onClose: () => void;
+  styles: any;
+}) {
+  const isFavorited = useIsFavorited(item.mal_id);
+
+  return (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => {
+        onSelect(item);
+        onClose();
+      }}
+    >
+      <View style={styles.imageContainer}>
+        <Image
+          source={{
+            uri:
+              item.images?.jpg?.large_image_url ||
+              item.images?.jpg?.image_url ||
+              'https://cdn.myanimelist.net/images/questionmark_50.gif',
+          }}
+          style={styles.image}
+        />
+        {isFavorited && (
+          <View style={styles.favoriteBadge}>
+            <Ionicons name="heart" size={14} color="#ff4d6d" />
+          </View>
+        )}
+      </View>
+      <Text style={styles.title} numberOfLines={2}>
+        {item.title}
+      </Text>
+      {item.score && (
+        <Text style={styles.score}>⭐ {item.score.toFixed(1)}</Text>
+      )}
+    </TouchableOpacity>
+  );
+}
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -161,29 +210,12 @@ export default function SearchModal({
               ) : null
             }
             renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() => {
-                  onSelect(item);
-                  onClose();
-                }}
-              >
-                <Image
-                  source={{
-                    uri:
-                      item.images?.jpg?.large_image_url ||
-                      item.images?.jpg?.image_url ||
-                      'https://cdn.myanimelist.net/images/questionmark_50.gif',
-                  }}
-                  style={styles.image}
-                />
-                <Text style={styles.title} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                {item.score && (
-                  <Text style={styles.score}>⭐ {item.score.toFixed(1)}</Text>
-                )}
-              </TouchableOpacity>
+              <SearchModalItem
+                item={item}
+                onSelect={onSelect}
+                onClose={onClose}
+                styles={styles}
+              />
             )}
           />
         </View>
@@ -250,11 +282,27 @@ const createStyles = (theme: Theme) =>
       shadowRadius: 4,
       elevation: 3,
     },
+    imageContainer: {
+      position: 'relative',
+    },
     image: {
       width: '100%',
       height: 180,
       borderTopLeftRadius: 12,
       borderTopRightRadius: 12,
+    },
+    favoriteBadge: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      borderRadius: 12,
+      padding: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
     },
     title: {
       color: theme.colors.text,

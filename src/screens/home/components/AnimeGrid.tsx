@@ -8,10 +8,55 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
+import Ionicons from '@react-native-vector-icons/ionicons';
 import type { Theme } from '@react-navigation/native';
 import { Anime } from '../../../types/jikan';
 import { useTheme } from '../../../theme/ThemeContext';
+import { useIsFavorited } from '../../../store/favorites_store';
 import { SPACING } from '../../../constants';
+
+// Separate component to avoid hook call issues in renderItem
+function AnimeGridItem({
+  item,
+  onPress,
+  styles
+}: {
+  item: Anime;
+  onPress: (id: number) => void;
+  styles: any;
+}) {
+  const isFavorited = useIsFavorited(item.mal_id);
+
+  return (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => onPress(item.mal_id)}
+    >
+      <View style={styles.imageContainer}>
+        <Image
+          source={{
+            uri:
+              item.images?.jpg?.large_image_url ||
+              item.images?.jpg?.image_url ||
+              'https://cdn.myanimelist.net/images/questionmark_50.gif',
+          }}
+          style={styles.image}
+        />
+        {isFavorited && (
+          <View style={styles.favoriteBadge}>
+            <Ionicons name="heart" size={14} color="#ff4d6d" />
+          </View>
+        )}
+      </View>
+      <Text style={styles.animeTitle} numberOfLines={1}>
+        {item.title}
+      </Text>
+      {item.score != null && (
+        <Text style={styles.score}>⭐ {item.score.toFixed(1)}</Text>
+      )}
+    </TouchableOpacity>
+  );
+}
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 3; // 3 items per row with 16px padding on sides
@@ -56,26 +101,11 @@ export default function AnimeGrid({
             : `${prefix}-${index}`;
         }}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => onPress(item.mal_id)}
-          >
-            <Image
-              source={{
-                uri:
-                  item.images?.jpg?.large_image_url ||
-                  item.images?.jpg?.image_url ||
-                  'https://cdn.myanimelist.net/images/questionmark_50.gif',
-              }}
-              style={styles.image}
-            />
-            <Text style={styles.animeTitle} numberOfLines={1}>
-              {item.title}
-            </Text>
-            {item.score != null && (
-              <Text style={styles.score}>⭐ {item.score.toFixed(1)}</Text>
-            )}
-          </TouchableOpacity>
+          <AnimeGridItem
+            item={item}
+            onPress={onPress}
+            styles={styles}
+          />
         )}
       />
     </View>
@@ -111,11 +141,27 @@ const createStyles = (theme: Theme) =>
       borderRadius: 12,
       overflow: 'hidden',
     },
+    imageContainer: {
+      position: 'relative',
+    },
     image: {
       width: '100%',
       height: 150,
       borderTopLeftRadius: 12,
       borderTopRightRadius: 12,
+    },
+    favoriteBadge: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      borderRadius: 12,
+      padding: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
     },
     animeTitle: {
       fontSize: 14,
