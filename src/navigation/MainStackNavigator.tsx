@@ -17,7 +17,7 @@ export default function MainStackNavigator() {
         headerStyle: { backgroundColor: theme.colors.card },
         headerTintColor: theme.colors.text,
         headerTitleStyle: { color: theme.colors.text },
-        headerBackTitle: 'Home', // Custom back button text
+        headerBackTitle: 'Back', // Custom back button text
       }}
     >
       <Stack.Screen

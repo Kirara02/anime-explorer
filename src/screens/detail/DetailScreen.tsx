@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Linking,
+  Alert,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { Theme } from '@react-navigation/native';
@@ -17,6 +18,8 @@ import { MainStackParamList } from '../../navigation/types';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { COLORS, SPACING } from '../../constants';
 import { getAnimeDetail } from '../../services';
+import { useAuthStore } from '../../store';
+import { useFavoritesStore, useIsFavorited } from '../../store/favorites_store';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Detail'>;
 
@@ -26,6 +29,9 @@ export default function DetailScreen({ route, navigation }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { theme } = useTheme();
+  const { user } = useAuthStore();
+  const { toggleFavorite } = useFavoritesStore();
+  const isFavorited = useIsFavorited(mal_id);
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
@@ -48,6 +54,19 @@ export default function DetailScreen({ route, navigation }: Props) {
 
     fetchAnimeDetail();
   }, [mal_id, navigation]);
+
+  const handleToggleFavorite = async () => {
+    if (!user || !anime) {
+      Alert.alert('Error', 'Please login to add favorites');
+      return;
+    }
+
+    try {
+      await toggleFavorite(user.uid, anime);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update favorites');
+    }
+  };
 
   if (loading) {
     return (
@@ -96,10 +115,26 @@ export default function DetailScreen({ route, navigation }: Props) {
 
       {/* Title Section */}
       <View style={styles.section}>
-        <Text style={styles.title}>{anime.title}</Text>
-        {anime.title_japanese && (
-          <Text style={styles.japaneseTitle}>{anime.title_japanese}</Text>
-        )}
+        <View style={styles.titleContainer}>
+          <View style={styles.titleWrapper}>
+            <Text style={styles.title}>{anime.title}</Text>
+            {anime.title_japanese && (
+              <Text style={styles.japaneseTitle}>{anime.title_japanese}</Text>
+            )}
+          </View>
+          {user && (
+            <TouchableOpacity
+              style={[styles.favoriteButton, isFavorited && styles.favoriteButtonActive]}
+              onPress={handleToggleFavorite}
+            >
+              <Ionicons
+                name={isFavorited ? "heart" : "heart-outline"}
+                size={28}
+                color={isFavorited ? "#ff4d6d" : theme.colors.text}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Score & Stats */}
@@ -226,6 +261,15 @@ const createStyles = (theme: Theme) =>
     section: {
       padding: 16,
     },
+    titleContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+    },
+    titleWrapper: {
+      flex: 1,
+      marginRight: 16,
+    },
     title: {
       fontSize: 24,
       fontWeight: 'bold',
@@ -236,6 +280,17 @@ const createStyles = (theme: Theme) =>
       fontSize: 16,
       color: theme.colors.text + '99',
       marginBottom: 8,
+    },
+    favoriteButton: {
+      padding: 8,
+      borderRadius: 20,
+      backgroundColor: theme.colors.card,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    favoriteButtonActive: {
+      backgroundColor: '#ff4d6d20',
+      borderColor: '#ff4d6d',
     },
     statsContainer: {
       flexDirection: 'row',
