@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { RecommendationEntry } from '../types/jikan';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 3;
@@ -26,6 +28,9 @@ export default function AnimeRecommendationCarousel({
   onPress,
   onSeeMore,
 }: AnimeRecommendationCarouselProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
@@ -40,9 +45,9 @@ export default function AnimeRecommendationCarousel({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {data.map(item => (
+        {data.map((item, index) => (
           <TouchableOpacity
-            key={`recommendation-${item.mal_id}`}
+            key={`recommendation-${item.mal_id}-${index}`}
             style={styles.card}
             onPress={() => onPress(item.mal_id)}
           >
@@ -65,51 +70,52 @@ export default function AnimeRecommendationCarousel({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 24,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  seeMoreButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  seeMoreText: {
-    color: '#00b4d8',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-  },
-  card: {
-    width: CARD_WIDTH,
-    marginRight: 12,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: CARD_WIDTH * 1.2,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  animeTitle: {
-    fontSize: 14,
-    color: '#fff',
-    padding: 8,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      marginBottom: 24,
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      marginBottom: 12,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+    },
+    seeMoreButton: {
+      backgroundColor: 'transparent',
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+    },
+    seeMoreText: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+    scrollContent: {
+      paddingHorizontal: 16,
+    },
+    card: {
+      width: CARD_WIDTH,
+      marginRight: 12,
+      backgroundColor: theme.colors.card,
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    image: {
+      width: '100%',
+      height: CARD_WIDTH * 1.2,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+    },
+    animeTitle: {
+      fontSize: 14,
+      color: theme.colors.text,
+      padding: 8,
+    },
+  });

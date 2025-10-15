@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,9 +11,11 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParamList } from '../navigation/types';
-import { getAnimeDetail } from '../services/jikan_moe_service';
+import { getAnimeDetail } from '../services';
 import type { Anime } from '../types/jikan';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Detail'>;
 
@@ -22,6 +24,8 @@ export default function DetailScreen({ route, navigation }: Props) {
   const [anime, setAnime] = useState<Anime | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
     const fetchAnimeDetail = async () => {
@@ -179,147 +183,148 @@ export default function DetailScreen({ route, navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
-    padding: 20,
-  },
-  errorText: {
-    color: '#ff6b6b',
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  retryButton: {
-    backgroundColor: '#00b4d8',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  coverImage: {
-    width: '100%',
-    height: 300,
-  },
-  section: {
-    padding: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 4,
-  },
-  japaneseTitle: {
-    fontSize: 16,
-    color: '#888',
-    marginBottom: 8,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 16,
-    backgroundColor: '#111',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  statLabel: {
-    color: '#888',
-    fontSize: 12,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#00b4d8',
-    marginBottom: 12,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#222',
-  },
-  infoLabel: {
-    color: '#888',
-    fontSize: 16,
-  },
-  infoValue: {
-    color: '#fff',
-    fontSize: 16,
-    flex: 1,
-    textAlign: 'right',
-    marginLeft: 16,
-  },
-  synopsis: {
-    color: '#fff',
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  genresContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginHorizontal: -4,
-  },
-  genreTag: {
-    backgroundColor: '#222',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    margin: 4,
-  },
-  genreText: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  trailerButton: {
-    flexDirection: 'row',
-    backgroundColor: '#ff0000',
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  trailerButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 8,
-  },
-  moreInfoButton: {
-    backgroundColor: '#2c2c2c',
-    margin: 16,
-    marginTop: 8,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  moreInfoButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+      padding: 20,
+    },
+    errorText: {
+      color: '#ff6b6b',
+      fontSize: 16,
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    retryButton: {
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
+      borderRadius: 8,
+    },
+    retryButtonText: {
+      color: '#fff',
+      fontSize: 16,
+    },
+    coverImage: {
+      width: '100%',
+      height: 300,
+    },
+    section: {
+      padding: 16,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+      marginBottom: 4,
+    },
+    japaneseTitle: {
+      fontSize: 16,
+      color: theme.colors.text + '99',
+      marginBottom: 8,
+    },
+    statsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      paddingVertical: 16,
+      backgroundColor: theme.colors.card,
+    },
+    statItem: {
+      alignItems: 'center',
+    },
+    statValue: {
+      color: theme.colors.text,
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginTop: 4,
+    },
+    statLabel: {
+      color: theme.colors.text + '99',
+      fontSize: 12,
+    },
+    sectionTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
+      marginBottom: 12,
+    },
+    infoRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 8,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border,
+    },
+    infoLabel: {
+      color: theme.colors.text + '99',
+      fontSize: 16,
+    },
+    infoValue: {
+      color: theme.colors.text,
+      fontSize: 16,
+      flex: 1,
+      textAlign: 'right',
+      marginLeft: 16,
+    },
+    synopsis: {
+      color: theme.colors.text,
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    genresContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginHorizontal: -4,
+    },
+    genreTag: {
+      backgroundColor: theme.colors.card,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      margin: 4,
+    },
+    genreText: {
+      color: theme.colors.text,
+      fontSize: 14,
+    },
+    trailerButton: {
+      flexDirection: 'row',
+      backgroundColor: '#ff0000',
+      margin: 16,
+      padding: 16,
+      borderRadius: 8,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    trailerButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: 'bold',
+      marginLeft: 8,
+    },
+    moreInfoButton: {
+      backgroundColor: theme.colors.card,
+      margin: 16,
+      marginTop: 8,
+      padding: 16,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    moreInfoButtonText: {
+      color: theme.colors.text,
+      fontSize: 16,
+    },
+  });

@@ -1,17 +1,29 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 export default function FavoritesScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: '#0a0a0a',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      <Text style={{ color: '#fff', fontSize: 20 }}>⭐ Favorite Screen</Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>⭐ Favorite Screen</Text>
     </View>
   );
 }
+
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    text: {
+      color: theme.colors.text,
+      fontSize: 20,
+    },
+  });

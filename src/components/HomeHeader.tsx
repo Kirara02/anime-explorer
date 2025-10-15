@@ -2,7 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import SearchModal from './SearchModal';
-import { useAuthStore } from '../store/auth_store';
+import { useAuthStore } from '../store';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 export default function HomeHeader({
   onSelectAnime,
@@ -10,7 +12,9 @@ export default function HomeHeader({
   onSelectAnime: (id: number) => void;
 }) {
   const { user } = useAuthStore();
+  const { theme } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   return (
     <View style={styles.container}>
@@ -42,31 +46,32 @@ export default function HomeHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginHorizontal: 16,
-  },
-  left: { flexDirection: 'row', alignItems: 'center' },
-  avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 10,
-    backgroundColor: '#1a1a1a',
-  },
-  avatarShadow: {
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginHorizontal: 16,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  greeting: { color: '#aaa', fontSize: 14 },
-  username: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-});
+    left: { flexDirection: 'row', alignItems: 'center' },
+    avatar: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      marginRight: 10,
+      backgroundColor: theme.colors.card,
+    },
+    avatarShadow: {
+      shadowColor: '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5,
+    },
+    greeting: { color: theme.colors.text + '99', fontSize: 14 },
+    username: { color: theme.colors.text, fontSize: 18, fontWeight: 'bold' },
+  });

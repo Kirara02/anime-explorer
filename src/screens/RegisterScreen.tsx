@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   TextInput,
@@ -10,9 +10,11 @@ import {
   Platform,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { signup } from '../services/auth_service';
-import { useAuthStore } from '../store/auth_store';
+import { signup } from '../services';
+import { useAuthStore } from '../store';
 import { AuthStackParamList } from '../navigation/types';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -31,6 +33,8 @@ export default function RegisterScreen({ navigation }: Props) {
   const [loading, setLoading] = useState(false);
 
   const { setUser } = useAuthStore();
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   // 🔹 Validasi input
   const validateInputs = () => {
@@ -150,42 +154,43 @@ export default function RegisterScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-    justifyContent: 'center',
-  },
-  innerContainer: {
-    marginHorizontal: 24,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#00b4d8',
-    marginBottom: 30,
-  },
-  input: {
-    width: '100%',
-    backgroundColor: '#1a1a1a',
-    borderWidth: 1,
-    borderColor: '#333',
-    borderRadius: 10,
-    padding: 12,
-    color: '#fff',
-    marginBottom: 15,
-  },
-  button: {
-    width: '100%',
-    backgroundColor: '#00b4d8',
-    borderRadius: 10,
-    padding: 14,
-    alignItems: 'center',
-    marginTop: 5,
-    marginBottom: 15,
-  },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
-  signupText: { color: '#aaa', fontSize: 14 },
-  link: { color: '#00b4d8', fontWeight: '600' },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      justifyContent: 'center',
+    },
+    innerContainer: {
+      marginHorizontal: 24,
+      alignItems: 'center',
+    },
+    title: {
+      fontSize: 26,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
+      marginBottom: 30,
+    },
+    input: {
+      width: '100%',
+      backgroundColor: theme.colors.card,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      padding: 12,
+      color: theme.colors.text,
+      marginBottom: 15,
+    },
+    button: {
+      width: '100%',
+      backgroundColor: theme.colors.primary,
+      borderRadius: 10,
+      padding: 14,
+      alignItems: 'center',
+      marginTop: 5,
+      marginBottom: 15,
+    },
+    buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+    signupText: { color: theme.colors.text + '99', fontSize: 14 },
+    link: { color: theme.colors.primary, fontWeight: '600' },
+  });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
   View,
@@ -18,7 +18,9 @@ import {
 } from 'react-native-safe-area-context';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { Anime } from '../types/jikan';
-import { searchAnime } from '../services/jikan_moe_service';
+import { searchAnime } from '../services';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -33,9 +35,15 @@ export default function SearchModal({
   onSelect: (anime: Anime) => void;
 }) {
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
     if (!visible) resetSearch();
@@ -44,13 +52,37 @@ export default function SearchModal({
   const handleSearch = async () => {
     if (!query.trim()) return;
     setLoading(true);
+    setCurrentPage(1);
     try {
-      const res = await searchAnime(query);
+      const res = await searchAnime(query, 1);
       setResults(res.data || []);
+      setHasNextPage(res.pagination?.has_next_page || false);
     } catch (err) {
       console.error('Search error:', err);
+      setResults([]);
+      setHasNextPage(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadMoreResults = async () => {
+    if (!hasNextPage || loadingMore || loading) return;
+
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+
+    try {
+      const res = await searchAnime(query, nextPage);
+      if (res.data) {
+        setResults(prev => [...prev, ...res.data]);
+        setCurrentPage(nextPage);
+        setHasNextPage(res.pagination?.has_next_page || false);
+      }
+    } catch (err) {
+      console.error('Load more error:', err);
+    } finally {
+      setLoadingMore(false);
     }
   };
 
@@ -58,6 +90,9 @@ export default function SearchModal({
     setQuery('');
     setResults([]);
     setLoading(false);
+    setLoadingMore(false);
+    setCurrentPage(1);
+    setHasNextPage(false);
   };
 
   return (
@@ -101,7 +136,7 @@ export default function SearchModal({
           {/* Loading */}
           {loading && (
             <ActivityIndicator
-              color="#00b4d8"
+              color={theme.colors.primary}
               size="large"
               style={{ marginTop: 20 }}
             />
@@ -114,6 +149,17 @@ export default function SearchModal({
             numColumns={2}
             contentContainerStyle={styles.grid}
             columnWrapperStyle={{ justifyContent: 'space-between' }}
+            onEndReached={loadMoreResults}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              loadingMore ? (
+                <ActivityIndicator
+                  color={theme.colors.primary}
+                  size="small"
+                  style={{ marginVertical: 20 }}
+                />
+              ) : null
+            }
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.card}
@@ -146,80 +192,81 @@ export default function SearchModal({
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-  searchBar: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1a1a1a',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-  },
-  input: {
-    flex: 1,
-    color: '#fff',
-    paddingVertical: 8,
-    fontSize: 16,
-    marginLeft: 6,
-  },
-  iconBtn: { paddingHorizontal: 6 },
-  actionIcon: {
-    marginLeft: 10,
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: '#ff4d4d',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  grid: { paddingBottom: 80 },
-  card: {
-    width: CARD_WIDTH,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  image: {
-    width: '100%',
-    height: 180,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 6,
-    marginHorizontal: 8,
-  },
-  score: {
-    color: '#ffd700',
-    fontSize: 12,
-    marginHorizontal: 8,
-    marginBottom: 8,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    container: {
+      flex: 1,
+      paddingHorizontal: 16,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginLeft: 8,
+    },
+    searchBar: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.card,
+      borderRadius: 10,
+      paddingHorizontal: 10,
+    },
+    input: {
+      flex: 1,
+      color: theme.colors.text,
+      paddingVertical: 8,
+      fontSize: 16,
+      marginLeft: 6,
+    },
+    iconBtn: { paddingHorizontal: 6 },
+    actionIcon: {
+      marginLeft: 10,
+      alignItems: 'center',
+    },
+    cancelText: {
+      color: '#ff4d4d',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    grid: { paddingBottom: 80 },
+    card: {
+      width: CARD_WIDTH,
+      backgroundColor: theme.colors.card,
+      borderRadius: 12,
+      marginBottom: 16,
+      overflow: 'hidden',
+      shadowColor: '#000',
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    image: {
+      width: '100%',
+      height: 180,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+    },
+    title: {
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '600',
+      marginTop: 6,
+      marginHorizontal: 8,
+    },
+    score: {
+      color: '#ffd700',
+      fontSize: 12,
+      marginHorizontal: 8,
+      marginBottom: 8,
+    },
+  });

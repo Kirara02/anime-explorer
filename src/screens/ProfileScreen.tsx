@@ -8,29 +8,21 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
-  useColorScheme,
+  Modal,
 } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import firestore from '@react-native-firebase/firestore';
-import { useAuthStore } from '../store/auth_store';
-import { DarkAppTheme, LightTheme } from '../theme/theme';
+import { useAuthStore } from '../store';
+import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileScreen() {
   const { user, logoutUser } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const colorScheme = useColorScheme();
-  const theme = colorScheme === 'dark' ? DarkAppTheme : LightTheme;
+  const [themeModalVisible, setThemeModalVisible] = useState(false);
+  const { theme, toggleTheme, themeMode } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-
-  const stats = {
-    favoriteCount: user?.favorites?.length || 0,
-    joinedDate: user?.createdAt
-      ? new Date(user.createdAt.toDate()).toLocaleDateString()
-      : 'Unknown',
-    lastActive: 'Today',
-  };
 
   const handleLogout = async () => {
     try {
@@ -49,6 +41,11 @@ export default function ProfileScreen() {
       'Coming Soon 🎨',
       'Edit profile feature will be available soon!',
     );
+  };
+
+  const handleThemeSelect = (selectedTheme: 'light' | 'dark' | 'system') => {
+    // This will be handled by the theme context
+    setThemeModalVisible(false);
   };
 
   const handleDeleteAccount = () => {
@@ -105,7 +102,7 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header Section */}
+        {/* Profile Header */}
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
             <Image
@@ -129,68 +126,126 @@ export default function ProfileScreen() {
           <Text style={styles.email}>{user.email}</Text>
         </View>
 
-        {/* Stats Section */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Ionicons name="heart" size={24} color="#ff4d6d" />
-            <Text style={styles.statValue}>{stats.favoriteCount}</Text>
-            <Text style={styles.statLabel}>Favorites</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Ionicons name="calendar" size={24} color="#00b4d8" />
-            <Text style={styles.statValue}>{stats.joinedDate}</Text>
-            <Text style={styles.statLabel}>Joined</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Ionicons name="time" size={24} color="#4CAF50" />
-            <Text style={styles.statValue}>{stats.lastActive}</Text>
-            <Text style={styles.statLabel}>Last Active</Text>
-          </View>
-        </View>
-
-        {/* Actions Section */}
-        <View style={styles.actionsContainer}>
+        {/* Menu Options */}
+        <View style={styles.menuContainer}>
           <TouchableOpacity
-            style={styles.actionButton}
-            onPress={handleEditProfile}
+            style={styles.menuItem}
+            onPress={() => setThemeModalVisible(true)}
           >
-            <Ionicons name="create-outline" size={24} color="#fff" />
-            <Text style={styles.actionButtonText}>Edit Profile</Text>
+            <View style={styles.menuItemLeft}>
+              <Ionicons
+                name={
+                  themeMode === 'dark'
+                    ? 'moon'
+                    : themeMode === 'light'
+                    ? 'sunny'
+                    : 'phone-portrait'
+                }
+                size={24}
+                color={theme.colors.primary}
+              />
+              <Text style={styles.menuItemText}>Theme</Text>
+            </View>
+            <View style={styles.menuItemRight}>
+              <Text style={styles.menuItemValue}>
+                {themeMode === 'dark' ? 'Dark' : 'Light'}
+              </Text>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={theme.colors.text + '66'}
+              />
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: '#2c2c2c' }]}
-            onPress={() =>
-              Alert.alert(
-                'Coming Soon 🎮',
-                'This feature will be available soon!',
-              )
-            }
-          >
-            <Ionicons name="settings-outline" size={24} color="#fff" />
-            <Text style={styles.actionButtonText}>Settings</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionButton, styles.logoutButton]}
+            style={[styles.menuItem, styles.logoutItem]}
             onPress={handleLogout}
           >
-            <Ionicons name="log-out-outline" size={24} color="#fff" />
-            <Text style={styles.actionButtonText}>Logout</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionButton, styles.deleteButton]}
-            onPress={handleDeleteAccount}
-          >
-            <Ionicons name="trash-outline" size={24} color="#fff" />
-            <Text style={styles.actionButtonText}>Delete Account</Text>
+            <View style={styles.menuItemLeft}>
+              <Ionicons name="log-out-outline" size={24} color="#ff4d4d" />
+              <Text style={[styles.menuItemText, { color: '#ff4d4d' }]}>
+                Logout
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={theme.colors.text + '66'}
+            />
           </TouchableOpacity>
         </View>
 
         {/* Version Info */}
         <Text style={styles.version}>Version 1.0.0</Text>
       </ScrollView>
+
+      {/* Theme Selection Modal */}
+      <Modal
+        visible={themeModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setThemeModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Choose Theme</Text>
+
+            <TouchableOpacity
+              style={[
+                styles.themeOption,
+                themeMode === 'light' && styles.selectedTheme,
+              ]}
+              onPress={() => {
+                if (themeMode !== 'light') {
+                  toggleTheme();
+                }
+                setThemeModalVisible(false);
+              }}
+            >
+              <Ionicons name="sunny" size={24} color="#FFD700" />
+              <Text style={styles.themeOptionText}>Light</Text>
+              {themeMode === 'light' && (
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.themeOption,
+                themeMode === 'dark' && styles.selectedTheme,
+              ]}
+              onPress={() => {
+                if (themeMode !== 'dark') {
+                  toggleTheme();
+                }
+                setThemeModalVisible(false);
+              }}
+            >
+              <Ionicons name="moon" size={24} color="#BB86FC" />
+              <Text style={styles.themeOptionText}>Dark</Text>
+              {themeMode === 'dark' && (
+                <Ionicons
+                  name="checkmark"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setThemeModalVisible(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -216,7 +271,7 @@ const createStyles = (theme: Theme) =>
     },
     header: {
       alignItems: 'center',
-      marginBottom: 30,
+      marginBottom: 40,
     },
     avatarContainer: {
       position: 'relative',
@@ -226,7 +281,7 @@ const createStyles = (theme: Theme) =>
       width: 120,
       height: 120,
       borderRadius: 60,
-      borderWidth: 2,
+      borderWidth: 3,
       borderColor: theme.colors.primary,
     },
     editAvatarButton: {
@@ -255,71 +310,104 @@ const createStyles = (theme: Theme) =>
       fontSize: 16,
       color: theme.colors.text + '99',
     },
-    statsContainer: {
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      marginBottom: 30,
-      paddingHorizontal: 20,
+    menuContainer: {
+      marginTop: 20,
     },
-    statItem: {
+    menuItem: {
+      flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'space-between',
       backgroundColor: theme.colors.card,
       padding: 16,
       borderRadius: 12,
-      minWidth: 100,
+      marginBottom: 12,
       shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
+      shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.1,
-      shadowRadius: 3.84,
-      elevation: 3,
+      shadowRadius: 2,
+      elevation: 2,
     },
-    statValue: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginVertical: 4,
+    menuItemLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    menuItemRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    menuItemText: {
+      fontSize: 16,
       color: theme.colors.text,
+      fontWeight: '500',
     },
-    statLabel: {
+    menuItemValue: {
       fontSize: 14,
       color: theme.colors.text + '99',
     },
-    actionsContainer: {
-      gap: 12,
-      marginBottom: 30,
-    },
-    actionButton: {
-      backgroundColor: theme.colors.primary,
-      flexDirection: 'row',
-      alignItems: 'center',
-      padding: 16,
-      borderRadius: 12,
-      gap: 12,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
-    },
-    actionButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    logoutButton: {
-      backgroundColor: '#f43f5e',
-    },
-    deleteButton: {
-      backgroundColor: '#dc2626',
+    logoutItem: {
+      marginTop: 20,
     },
     version: {
       textAlign: 'center',
       color: theme.colors.text + '80',
       fontSize: 14,
+      marginTop: 40,
       marginBottom: 20,
     },
     text: {
       fontSize: 16,
       color: theme.colors.text + '99',
       textAlign: 'center',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      backgroundColor: theme.colors.card,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      padding: 20,
+      paddingBottom: 40,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+      textAlign: 'center',
+      marginBottom: 20,
+    },
+    themeOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 16,
+      borderRadius: 12,
+      marginBottom: 8,
+      backgroundColor: theme.colors.background,
+      gap: 12,
+    },
+    selectedTheme: {
+      backgroundColor: theme.colors.primary + '20',
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+    },
+    themeOptionText: {
+      flex: 1,
+      fontSize: 16,
+      color: theme.colors.text,
+      fontWeight: '500',
+    },
+    cancelButton: {
+      marginTop: 10,
+      padding: 16,
+      alignItems: 'center',
+    },
+    cancelButtonText: {
+      fontSize: 16,
+      color: theme.colors.text + '99',
+      fontWeight: '500',
     },
   });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   ScrollView,
   View,
@@ -10,17 +10,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeHeader from '../components/HomeHeader';
 import AnimeGrid from '../components/AnimeGrid';
-import {
-  getSeasonNow,
-  getTopAnime,
-  getUpcomingAnime,
-} from '../services/jikan_moe_service';
+import { getSeasonNow, getTopAnime, getUpcomingAnime } from '../services';
 import { Anime } from '../types/jikan';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { MainStackParamList } from '../navigation/types';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAuthStore } from '../store/auth_store';
+import { useAuthStore } from '../store';
 import AnimeRecommendationCarousel from '../components/AnimeRecommendationCarousel';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'Home'>;
 
@@ -40,9 +38,12 @@ const categories: AnimeCategory[] = [
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const fetchAnimeByCategory = React.useCallback(
     async (category: AnimeCategory) => {
@@ -71,7 +72,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <HomeHeader
           onSelectAnime={(id: number) =>
@@ -95,7 +96,15 @@ export default function HomeScreen() {
               ]}
               onPress={() => setSelectedCategory(category)}
             >
-              <Text style={styles.categoryText}>{category.title}</Text>
+              <Text
+                style={[
+                  styles.categoryText,
+                  selectedCategory.id === category.id &&
+                    styles.selectedCategoryText,
+                ]}
+              >
+                {category.title}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -140,43 +149,48 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#0a0a0a',
-  },
-  scrollContent: {
-    paddingBottom: 24,
-  },
-  categoryContainer: {
-    marginBottom: 20,
-    marginTop: 24,
-  },
-  categoryContent: {
-    paddingHorizontal: 16,
-  },
-  categoryBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 20,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: '#333',
-  },
-  selectedBadge: {
-    backgroundColor: '#00b4d8',
-    borderColor: '#00b4d8',
-  },
-  categoryText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  loading: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
-    minHeight: 400,
-    paddingTop: 20,
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    scrollContent: {
+      paddingBottom: 24,
+    },
+    categoryContainer: {
+      marginBottom: 20,
+      marginTop: 24,
+    },
+    categoryContent: {
+      paddingHorizontal: 16,
+    },
+    categoryBadge: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      backgroundColor: theme.colors.card,
+      borderRadius: 20,
+      marginRight: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    selectedBadge: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    categoryText: {
+      color: theme.colors.text,
+      fontSize: 16,
+    },
+    selectedCategoryText: {
+      color: '#fff',
+      fontSize: 16,
+    },
+    loading: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: theme.colors.background,
+      minHeight: 400,
+      paddingTop: 20,
+    },
+  });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Dimensions,
 } from 'react-native';
 import { Anime } from '../types/jikan';
+import { useTheme } from '../theme/ThemeContext';
+import type { Theme } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 3; // 3 items per row with 16px padding on sides
@@ -26,6 +28,9 @@ export default function AnimeGrid({
   onPress,
   onSeeMore,
 }: AnimeGridProps) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   // Limit to 6 items
   const limitedData = data.slice(0, 6);
 
@@ -76,60 +81,61 @@ export default function AnimeGrid({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 24,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  gridContainer: {
-    paddingHorizontal: 16,
-    justifyContent: 'center', // rata tengah
-  },
-  card: {
-    width: CARD_WIDTH,
-    marginHorizontal: 4,
-    marginBottom: 16,
-    backgroundColor: '#1a1a1a',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  image: {
-    width: '100%',
-    height: 150,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  animeTitle: {
-    fontSize: 14,
-    color: '#fff',
-    padding: 8,
-    paddingBottom: 4,
-  },
-  score: {
-    fontSize: 12,
-    color: '#ffd700',
-    paddingHorizontal: 8,
-    paddingBottom: 8,
-  },
-  seeMoreButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  seeMoreText: {
-    color: '#00b4d8',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    container: {
+      marginBottom: 24,
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      marginBottom: 12,
+    },
+    title: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: theme.colors.text,
+    },
+    gridContainer: {
+      paddingHorizontal: 16,
+      justifyContent: 'center', // rata tengah
+    },
+    card: {
+      width: CARD_WIDTH,
+      marginHorizontal: 4,
+      marginBottom: 16,
+      backgroundColor: theme.colors.card,
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    image: {
+      width: '100%',
+      height: 150,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+    },
+    animeTitle: {
+      fontSize: 14,
+      color: theme.colors.text,
+      padding: 8,
+      paddingBottom: 4,
+    },
+    score: {
+      fontSize: 12,
+      color: '#ffd700',
+      paddingHorizontal: 8,
+      paddingBottom: 8,
+    },
+    seeMoreButton: {
+      backgroundColor: 'transparent',
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+    },
+    seeMoreText: {
+      color: theme.colors.primary,
+      fontSize: 14,
+      fontWeight: '600',
+    },
+  });

@@ -1,21 +1,15 @@
 // services/jikan_moe_service.ts
-import axios from 'axios';
 import { BaseResponse, Anime, RecommendationsResponse } from '../types/jikan';
-
-const API_BASE = 'https://api.jikan.moe/v4';
+import { apiClient } from './api/base';
+import { ApiResponse } from '../types/api';
 
 // Fungsi untuk menambah delay
 const delay = (ms: number) =>
   new Promise<void>(resolve => setTimeout(() => resolve(), ms));
 
-// Axios instance dengan retry logic
-const api = axios.create({
-  baseURL: API_BASE,
-});
-
 // Cache untuk menyimpan response
 const cache: Record<string, { data: any; timestamp: number }> = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 menit
+const CACHE_DURATION = 10 * 60 * 1000; // 10 menit (lebih lama untuk mengurangi API calls)
 
 // Fungsi untuk mengambil data dengan cache
 async function fetchWithCache<T>(url: string): Promise<T> {
@@ -27,32 +21,29 @@ async function fetchWithCache<T>(url: string): Promise<T> {
   }
 
   try {
-    const response = await api.get<T>(url);
+    const response = await apiClient.get<T>(url);
     cache[url] = {
-      data: response.data,
+      data: response,
       timestamp: now,
     };
-    return response.data;
+    return response;
   } catch (error: any) {
-    if (error.response?.status === 429) {
-      // Jika rate limited, tunggu 1 detik dan coba lagi
-      await delay(1000);
-      return fetchWithCache<T>(url);
-    }
+    // Rate limiting sudah ditangani di apiClient interceptor
+    // Jadi kita tidak perlu handle lagi di sini
     throw error;
   }
 }
 
-export const getSeasonNow = async (): Promise<BaseResponse<Anime>> => {
-  return fetchWithCache('/seasons/now');
+export const getSeasonNow = async (page: number = 1): Promise<BaseResponse<Anime>> => {
+  return fetchWithCache(`/seasons/now?page=${page}`);
 };
 
-export const getTopAnime = async (): Promise<BaseResponse<Anime>> => {
-  return fetchWithCache('/top/anime');
+export const getTopAnime = async (page: number = 1): Promise<BaseResponse<Anime>> => {
+  return fetchWithCache(`/top/anime?page=${page}`);
 };
 
-export const getUpcomingAnime = async (): Promise<BaseResponse<Anime>> => {
-  return fetchWithCache('/seasons/upcoming');
+export const getUpcomingAnime = async (page: number = 1): Promise<BaseResponse<Anime>> => {
+  return fetchWithCache(`/seasons/upcoming?page=${page}`);
 };
 
 export const getRecommendations =
@@ -62,9 +53,10 @@ export const getRecommendations =
 
 export const searchAnime = async (
   query: string,
+  page: number = 1,
 ): Promise<BaseResponse<Anime>> => {
   // Search tidak menggunakan cache karena query bisa berubah-ubah
-  return (await api.get(`/anime?q=${encodeURIComponent(query)}`)).data;
+  return await apiClient.get(`/anime?q=${encodeURIComponent(query)}&page=${page}`);
 };
 
 export const getAnimeDetail = async (id: number): Promise<{ data: Anime }> => {

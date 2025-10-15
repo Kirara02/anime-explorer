@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { useAuthStore } from '../store/auth_store';
+import { useAuthStore } from '../store';
 import AuthNavigator from './AuthNavigator';
 import MainStackNavigator from './MainStackNavigator';
 

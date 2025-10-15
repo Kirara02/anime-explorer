@@ -4,16 +4,19 @@ import { MainStackParamList } from './types';
 import MainNavigator from './MainNavigator';
 import DetailScreen from '../screens/DetailScreen';
 import CategoryListScreen from '../screens/CategoryListScreen';
+import { useTheme } from '../theme/ThemeContext';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
 export default function MainStackNavigator() {
+  const { theme } = useTheme();
+
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: '#0a0a0a' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { color: '#fff' },
+        headerStyle: { backgroundColor: theme.colors.card },
+        headerTintColor: theme.colors.text,
+        headerTitleStyle: { color: theme.colors.text },
       }}
     >
       <Stack.Screen
