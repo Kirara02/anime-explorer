@@ -102,21 +102,17 @@ export const getUser = async (): Promise<AppUser | null> => {
     .doc(currentUser.uid)
     .get();
 
-  if (!userDoc.exists) {
-    return {
-      uid: currentUser.uid,
-      name: currentUser.displayName || 'Guest',
-      email: currentUser.email || '',
-      photoURL: currentUser.photoURL || undefined,
-    };
-  }
+  const data = userDoc.exists()
+    ? (userDoc.data() as AppUser | undefined)
+    : undefined;
 
-  const data = userDoc.data() as AppUser;
   return {
-    ...data,
     uid: currentUser.uid,
-    email: currentUser.email || data.email,
-    photoURL: currentUser.photoURL || data.photoURL,
+    name: currentUser.displayName || data?.name || 'Guest',
+    email: currentUser.email || data?.email || '',
+    photoURL: currentUser.photoURL || data?.photoURL,
+    createdAt: data?.createdAt,
+    favorites: data?.favorites || [],
   };
 };
 

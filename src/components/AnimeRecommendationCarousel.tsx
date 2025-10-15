@@ -42,7 +42,7 @@ export default function AnimeRecommendationCarousel({
       >
         {data.map(item => (
           <TouchableOpacity
-            key={item.mal_id}
+            key={`recommendation-${item.mal_id}`}
             style={styles.card}
             onPress={() => onPress(item.mal_id)}
           >

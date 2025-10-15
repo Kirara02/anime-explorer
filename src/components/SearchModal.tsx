@@ -12,7 +12,10 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { Anime } from '../types/jikan';
 import { searchAnime } from '../services/jikan_moe_service';
@@ -29,6 +32,7 @@ export default function SearchModal({
   onClose: () => void;
   onSelect: (anime: Anime) => void;
 }) {
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Anime[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,12 +62,16 @@ export default function SearchModal({
 
   return (
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
-      <SafeAreaView
-        style={styles.safeArea}
-        edges={['top', 'left', 'right', 'bottom']}
+      <View
+        style={[
+          styles.safeArea,
+          {
+            paddingTop: Platform.OS === 'ios' ? insets.top : 4,
+            paddingBottom: insets.bottom,
+          },
+        ]}
       >
         <View style={styles.container}>
-          {/* Header bar */}
           <View style={styles.header}>
             {/* Search field */}
             <View style={styles.searchBar}>
@@ -133,7 +141,7 @@ export default function SearchModal({
             )}
           />
         </View>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }

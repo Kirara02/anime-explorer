@@ -12,11 +12,6 @@ export default function HomeHeader({
   const { user } = useAuthStore();
   const [modalVisible, setModalVisible] = useState(false);
 
-  // const avatarUrl = useMemo(() => {
-  //   if (user?.photoURL) return user.photoURL;
-  //   return `https://ui-avatars.com/api/?name=Kirara&background=0D8ABC&color=fff&size=128&format=png`;
-  // }, [user?.photoURL, user?.name]);
-
   return (
     <View style={styles.container}>
       <View style={styles.left}>
@@ -53,7 +48,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginHorizontal: 16,
-    marginTop: 50,
   },
   left: { flexDirection: 'row', alignItems: 'center' },
   avatar: {
@@ -61,7 +55,7 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 25,
     marginRight: 10,
-    backgroundColor: '#1a1a1a', // background gelap untuk loading state
+    backgroundColor: '#1a1a1a',
   },
   avatarShadow: {
     shadowColor: '#000',

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Text,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeHeader from '../components/HomeHeader';
 import AnimeGrid from '../components/AnimeGrid';
 import {
@@ -31,24 +32,9 @@ type AnimeCategory = {
 };
 
 const categories: AnimeCategory[] = [
-  {
-    id: 'now_airing',
-    title: 'Now Airing',
-    emoji: '',
-    fetch: getSeasonNow,
-  },
-  {
-    id: 'top_anime',
-    title: 'Top Anime',
-    emoji: '',
-    fetch: getTopAnime,
-  },
-  {
-    id: 'upcoming',
-    title: 'Upcoming',
-    emoji: '',
-    fetch: getUpcomingAnime,
-  },
+  { id: 'now_airing', title: 'Now Airing', emoji: '', fetch: getSeasonNow },
+  { id: 'top_anime', title: 'Top Anime', emoji: '', fetch: getTopAnime },
+  { id: 'upcoming', title: 'Upcoming', emoji: '', fetch: getUpcomingAnime },
 ];
 
 export default function HomeScreen() {
@@ -61,7 +47,6 @@ export default function HomeScreen() {
   const fetchAnimeByCategory = React.useCallback(
     async (category: AnimeCategory) => {
       if (!user) return;
-
       setLoading(true);
       try {
         const response = await category.fetch();
@@ -75,12 +60,10 @@ export default function HomeScreen() {
     [user],
   );
 
-  // Fetch data when category changes
   useEffect(() => {
     fetchAnimeByCategory(selectedCategory);
   }, [selectedCategory, fetchAnimeByCategory]);
 
-  // Fetch data when screen gets focus
   useFocusEffect(
     React.useCallback(() => {
       fetchAnimeByCategory(selectedCategory);
@@ -88,16 +71,15 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Header dengan greeting & search */}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         <HomeHeader
           onSelectAnime={(id: number) =>
             navigation.navigate('Detail', { mal_id: id })
           }
         />
 
-        {/* Category badges */}
+        {/* Category Selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -154,24 +136,17 @@ export default function HomeScreen() {
           </>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#0a0a0a',
   },
-  scrollView: {
-    flex: 1,
-  },
-  loading: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#0a0a0a',
-    minHeight: 400,
-    paddingTop: 20,
+  scrollContent: {
+    paddingBottom: 24,
   },
   categoryContainer: {
     marginBottom: 20,
@@ -196,5 +171,12 @@ const styles = StyleSheet.create({
   categoryText: {
     color: '#fff',
     fontSize: 16,
+  },
+  loading: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0a0a0a',
+    minHeight: 400,
+    paddingTop: 20,
   },
 });
