@@ -1,70 +1,90 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View, ActivityIndicator, StyleSheet } from 'react-native';
+import {
+  ScrollView,
+  View,
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
 import HomeHeader from '../components/HomeHeader';
-import AnimeCarousel from '../components/AnimeCarousel';
+import AnimeGrid from '../components/AnimeGrid';
 import {
   getSeasonNow,
   getTopAnime,
   getUpcomingAnime,
-  getRecommendations,
 } from '../services/jikan_moe_service';
-import { Anime, RecommendationEntry } from '../types/jikan';
+import { Anime } from '../types/jikan';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { MainStackParamList } from '../navigation/types';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuthStore } from '../store/auth_store';
+import AnimeRecommendationCarousel from '../components/AnimeRecommendationCarousel';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'Home'>;
+
+type AnimeCategory = {
+  id: string;
+  title: string;
+  emoji: string;
+  fetch: () => Promise<{ data?: Anime[] }>;
+};
+
+const categories: AnimeCategory[] = [
+  {
+    id: 'now_airing',
+    title: 'Now Airing',
+    emoji: '',
+    fetch: getSeasonNow,
+  },
+  {
+    id: 'top_anime',
+    title: 'Top Anime',
+    emoji: '',
+    fetch: getTopAnime,
+  },
+  {
+    id: 'upcoming',
+    title: 'Upcoming',
+    emoji: '',
+    fetch: getUpcomingAnime,
+  },
+];
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
   const [loading, setLoading] = useState(true);
-  const [nowAiring, setNowAiring] = useState<Anime[]>([]);
-  const [topAnime, setTopAnime] = useState<Anime[]>([]);
-  const [upcoming, setUpcoming] = useState<Anime[]>([]);
-  const [recommendations, setRecommendations] = useState<RecommendationEntry[]>(
-    [],
+  const [animeList, setAnimeList] = useState<Anime[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+
+  const fetchAnimeByCategory = React.useCallback(
+    async (category: AnimeCategory) => {
+      if (!user) return;
+
+      setLoading(true);
+      try {
+        const response = await category.fetch();
+        setAnimeList(response.data || []);
+      } catch (err) {
+        console.log('❌ Fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user],
   );
 
-  const fetchAll = React.useCallback(async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const [now, top, up, rec] = await Promise.all([
-        getSeasonNow(),
-        getTopAnime(),
-        getUpcomingAnime(),
-        getRecommendations(),
-      ]);
-
-      setNowAiring(now.data || []);
-      setTopAnime(top.data || []);
-      setUpcoming(up.data || []);
-
-      const recEntries: RecommendationEntry[] =
-        rec.data
-          ?.flatMap(r => r.entry || [])
-          .filter((e): e is RecommendationEntry => e !== undefined) || [];
-      setRecommendations(recEntries);
-    } catch (err) {
-      console.log('❌ Fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  // Fetch data saat pertama kali komponen mount dan user ada
+  // Fetch data when category changes
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    fetchAnimeByCategory(selectedCategory);
+  }, [selectedCategory, fetchAnimeByCategory]);
 
-  // Fetch data setiap kali screen mendapat focus
+  // Fetch data when screen gets focus
   useFocusEffect(
     React.useCallback(() => {
-      fetchAll();
-    }, [fetchAll]),
+      fetchAnimeByCategory(selectedCategory);
+    }, [fetchAnimeByCategory, selectedCategory]),
   );
 
   return (
@@ -77,41 +97,58 @@ export default function HomeScreen() {
           }
         />
 
+        {/* Category badges */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoryContainer}
+          contentContainerStyle={styles.categoryContent}
+        >
+          {categories.map(category => (
+            <TouchableOpacity
+              key={category.id}
+              style={[
+                styles.categoryBadge,
+                selectedCategory.id === category.id && styles.selectedBadge,
+              ]}
+              onPress={() => setSelectedCategory(category)}
+            >
+              <Text style={styles.categoryText}>{category.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
         {loading ? (
           <View style={styles.loading}>
             <ActivityIndicator size="large" color="#00b4d8" />
           </View>
         ) : (
           <>
-            <AnimeCarousel
-              title="Now Airing 🌸"
-              data={nowAiring}
+            <AnimeGrid
+              title={selectedCategory.title}
+              data={animeList}
               onPress={(id: number) =>
                 navigation.navigate('Detail', { mal_id: id })
               }
-            />
-
-            <AnimeCarousel
-              title="Top Anime 🔝"
-              data={topAnime}
-              onPress={(id: number) =>
-                navigation.navigate('Detail', { mal_id: id })
+              onSeeMore={() =>
+                navigation.navigate('CategoryList', {
+                  category: selectedCategory.id,
+                  title: selectedCategory.title,
+                })
               }
             />
 
-            <AnimeCarousel
-              title="Upcoming ⏳"
-              data={upcoming}
+            <AnimeRecommendationCarousel
+              title="Recommendations"
+              data={animeList}
               onPress={(id: number) =>
                 navigation.navigate('Detail', { mal_id: id })
               }
-            />
-
-            <AnimeCarousel
-              title="Recommendations 💌"
-              data={recommendations}
-              onPress={(id: number) =>
-                navigation.navigate('Detail', { mal_id: id })
+              onSeeMore={() =>
+                navigation.navigate('CategoryList', {
+                  category: 'recommendations',
+                  title: 'Recommendations',
+                })
               }
             />
           </>
@@ -135,5 +172,29 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a0a0a',
     minHeight: 400,
     paddingTop: 20,
+  },
+  categoryContainer: {
+    marginBottom: 20,
+    marginTop: 24,
+  },
+  categoryContent: {
+    paddingHorizontal: 16,
+  },
+  categoryBadge: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 20,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  selectedBadge: {
+    backgroundColor: '#00b4d8',
+    borderColor: '#00b4d8',
+  },
+  categoryText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });

@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from './types';
 import MainNavigator from './MainNavigator';
 import DetailScreen from '../screens/DetailScreen';
+import CategoryListScreen from '../screens/CategoryListScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -25,6 +26,7 @@ export default function MainStackNavigator() {
         component={DetailScreen}
         options={{ title: 'Anime Detail' }}
       />
+      <Stack.Screen name="CategoryList" component={CategoryListScreen} />
     </Stack.Navigator>
   );
 }

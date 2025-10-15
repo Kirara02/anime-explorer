@@ -58,7 +58,10 @@ export default function SearchModal({
 
   return (
     <Modal animationType="slide" visible={visible} onRequestClose={onClose}>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={['top', 'left', 'right', 'bottom']}
+      >
         <View style={styles.container}>
           {/* Header bar */}
           <View style={styles.header}>
@@ -143,7 +146,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'android' ? 12 : 0, // extra top space on Android
   },
   header: {
     flexDirection: 'row',
