@@ -10,12 +10,13 @@ import {
   Linking,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MainStackParamList } from '../navigation/types';
-import { getAnimeDetail } from '../services';
-import type { Anime } from '../types/jikan';
-import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { useTheme } from '../../theme/ThemeContext';
+import { Anime } from '../../types/jikan';
+import { MainStackParamList } from '../../navigation/types';
+import Ionicons from '@react-native-vector-icons/ionicons';
+import { COLORS, SPACING } from '../../constants';
+import { getAnimeDetail } from '../../services';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Detail'>;
 
@@ -51,7 +52,7 @@ export default function DetailScreen({ route, navigation }: Props) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#00b4d8" />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
@@ -127,7 +128,7 @@ export default function DetailScreen({ route, navigation }: Props) {
       </View>
 
       {/* Information Section */}
-      <View style={styles.section}>
+      <View style={[styles.section, { paddingHorizontal: SPACING.md }]}>
         <Text style={styles.sectionTitle}>Information</Text>
         {renderInfoRow('Type', anime.type)}
         {renderInfoRow('Episodes', anime.episodes?.toString())}

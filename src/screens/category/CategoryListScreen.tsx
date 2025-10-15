@@ -10,12 +10,12 @@ import {
   Text,
 } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import type { MainStackParamList } from '../navigation/types';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Anime, RecommendationEntry } from '../types/jikan';
-import { getRecommendations, getSeasonNow, getTopAnime, getUpcomingAnime } from '../services';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { MainStackParamList } from '../../navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Anime, RecommendationEntry } from '../../types/jikan';
+import { useTheme } from '../../theme/ThemeContext';
+import { getRecommendations, getSeasonNow, getTopAnime, getUpcomingAnime } from '../../services';
 
 type CategoryListScreenRouteProp = RouteProp<
   MainStackParamList,

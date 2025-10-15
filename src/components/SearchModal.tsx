@@ -12,15 +12,14 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import { Anime } from '../types/jikan';
-import { searchAnime } from '../services';
+import { Anime, BaseResponse } from '../types/jikan';
 import { useTheme } from '../theme/ThemeContext';
+import { useApi } from '../hooks/useApi';
+import { COLORS } from '../constants';
 import type { Theme } from '@react-navigation/native';
+import { searchAnime } from '../services';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2;
@@ -49,20 +48,21 @@ export default function SearchModal({
     if (!visible) resetSearch();
   }, [visible]);
 
+  const { loading: searchLoading, execute: searchExecute } =
+    useApi<BaseResponse<Anime>>();
+
   const handleSearch = async () => {
     if (!query.trim()) return;
-    setLoading(true);
+
     setCurrentPage(1);
     try {
-      const res = await searchAnime(query, 1);
-      setResults(res.data || []);
-      setHasNextPage(res.pagination?.has_next_page || false);
+      const res = await searchExecute(() => searchAnime(query, 1));
+      setResults(res?.data || []);
+      setHasNextPage(res?.pagination?.has_next_page || false);
     } catch (err) {
       console.error('Search error:', err);
       setResults([]);
       setHasNextPage(false);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -134,9 +134,9 @@ export default function SearchModal({
           </View>
 
           {/* Loading */}
-          {loading && (
+          {searchLoading && (
             <ActivityIndicator
-              color={theme.colors.primary}
+              color={COLORS.primary}
               size="large"
               style={{ marginTop: 20 }}
             />
@@ -154,7 +154,7 @@ export default function SearchModal({
             ListFooterComponent={
               loadingMore ? (
                 <ActivityIndicator
-                  color={theme.colors.primary}
+                  color={COLORS.primary}
                   size="small"
                   style={{ marginVertical: 20 }}
                 />

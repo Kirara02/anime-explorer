@@ -11,11 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../navigation/types';
-import { login } from '../services';
-import { useAuthStore } from '../store';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { AuthStackParamList } from '../../navigation/types';
+import { useAuthStore } from '../../store';
+import { useTheme } from '../../theme/ThemeContext';
+import { login } from '../../services';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -135,7 +135,11 @@ export default function LoginScreen({ navigation }: Props) {
 
 const createStyles = (theme: Theme) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: theme.colors.background, justifyContent: 'center' },
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      justifyContent: 'center',
+    },
     innerContainer: { marginHorizontal: 24, alignItems: 'center' },
     logo: { width: 120, height: 120, marginBottom: 20, borderRadius: 60 },
     title: {

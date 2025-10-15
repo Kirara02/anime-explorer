@@ -4,9 +4,8 @@ export type AuthStackParamList = {
 };
 
 export type MainStackParamList = {
-  Home: undefined;
+  MainTabs: undefined;
   Detail: { mal_id: number };
-  Profile: undefined;
   CategoryList: {
     category: string;
     title: string;

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { useTheme } from '../../theme/ThemeContext';
 
 export default function FavoritesScreen() {
   const { theme } = useTheme();

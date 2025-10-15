@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { useTheme } from '../../theme/ThemeContext';
 
 interface Props {
   children: React.ReactNode;
@@ -34,14 +34,22 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultFallback;
-      return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
+      return (
+        <FallbackComponent
+          error={this.state.error!}
+          resetError={this.resetError}
+        />
+      );
     }
 
     return this.props.children;
   }
 }
 
-const DefaultFallback: React.FC<{ error: Error; resetError: () => void }> = ({ error, resetError }) => {
+const DefaultFallback: React.FC<{ error: Error; resetError: () => void }> = ({
+  error,
+  resetError,
+}) => {
   const { theme } = useTheme();
   const styles = createStyles(theme);
 

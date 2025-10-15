@@ -3,36 +3,34 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   Image,
   Dimensions,
 } from 'react-native';
-import { Anime } from '../types/jikan';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { RecommendationEntry } from '../../../types/jikan';
+import { useTheme } from '../../../theme/ThemeContext';
+import { SPACING } from '../../../constants';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48) / 3; // 3 items per row with 16px padding on sides
+const CARD_WIDTH = (width - 48) / 3;
 
-interface AnimeGridProps {
+interface AnimeRecommendationCarouselProps {
   title: string;
-  data: Anime[];
+  data: RecommendationEntry[];
   onPress: (id: number) => void;
   onSeeMore: () => void;
 }
 
-export default function AnimeGrid({
+export default function AnimeRecommendationCarousel({
   title,
   data,
   onPress,
   onSeeMore,
-}: AnimeGridProps) {
+}: AnimeRecommendationCarouselProps) {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-
-  // Limit to 6 items
-  const limitedData = data.slice(0, 6);
 
   return (
     <View style={styles.container}>
@@ -43,19 +41,14 @@ export default function AnimeGrid({
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={limitedData}
-        numColumns={3}
-        scrollEnabled={false}
-        contentContainerStyle={styles.gridContainer}
-        keyExtractor={(item, index) => {
-          const prefix = title.toLowerCase().replace(/\s+/g, '-');
-          return item.mal_id
-            ? `${prefix}-${item.mal_id}`
-            : `${prefix}-${index}`;
-        }}
-        renderItem={({ item }) => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {data.map((item, index) => (
           <TouchableOpacity
+            key={`recommendation-${item.mal_id}-${index}`}
             style={styles.card}
             onPress={() => onPress(item.mal_id)}
           >
@@ -68,15 +61,12 @@ export default function AnimeGrid({
               }}
               style={styles.image}
             />
-            <Text style={styles.animeTitle} numberOfLines={1}>
+            <Text style={styles.animeTitle} numberOfLines={2}>
               {item.title}
             </Text>
-            {item.score != null && (
-              <Text style={styles.score}>⭐ {item.score.toFixed(1)}</Text>
-            )}
           </TouchableOpacity>
-        )}
-      />
+        ))}
+      </ScrollView>
     </View>
   );
 }
@@ -98,36 +88,6 @@ const createStyles = (theme: Theme) =>
       fontWeight: 'bold',
       color: theme.colors.text,
     },
-    gridContainer: {
-      paddingHorizontal: 16,
-      justifyContent: 'center', // rata tengah
-    },
-    card: {
-      width: CARD_WIDTH,
-      marginHorizontal: 4,
-      marginBottom: 16,
-      backgroundColor: theme.colors.card,
-      borderRadius: 12,
-      overflow: 'hidden',
-    },
-    image: {
-      width: '100%',
-      height: 150,
-      borderTopLeftRadius: 12,
-      borderTopRightRadius: 12,
-    },
-    animeTitle: {
-      fontSize: 14,
-      color: theme.colors.text,
-      padding: 8,
-      paddingBottom: 4,
-    },
-    score: {
-      fontSize: 12,
-      color: '#ffd700',
-      paddingHorizontal: 8,
-      paddingBottom: 8,
-    },
     seeMoreButton: {
       backgroundColor: 'transparent',
       paddingVertical: 4,
@@ -137,5 +97,26 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.primary,
       fontSize: 14,
       fontWeight: '600',
+    },
+    scrollContent: {
+      paddingHorizontal: SPACING.md,
+    },
+    card: {
+      width: CARD_WIDTH,
+      marginRight: 12,
+      backgroundColor: theme.colors.card,
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    image: {
+      width: '100%',
+      height: CARD_WIDTH * 1.2,
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+    },
+    animeTitle: {
+      fontSize: 14,
+      color: theme.colors.text,
+      padding: 8,
     },
   });

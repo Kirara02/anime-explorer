@@ -10,11 +10,11 @@ import {
   Platform,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { signup } from '../services';
-import { useAuthStore } from '../store';
-import { AuthStackParamList } from '../navigation/types';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { useAuthStore } from '../../store';
+import { useTheme } from '../../theme/ThemeContext';
+import { AuthStackParamList } from '../../navigation/types';
+import { signup } from '../../services';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,

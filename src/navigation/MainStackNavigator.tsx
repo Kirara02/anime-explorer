@@ -2,8 +2,8 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from './types';
 import MainNavigator from './MainNavigator';
-import DetailScreen from '../screens/DetailScreen';
-import CategoryListScreen from '../screens/CategoryListScreen';
+import { DetailScreen } from '../screens/detail';
+import { CategoryListScreen } from '../screens/category';
 import { useTheme } from '../theme/ThemeContext';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
@@ -17,12 +17,15 @@ export default function MainStackNavigator() {
         headerStyle: { backgroundColor: theme.colors.card },
         headerTintColor: theme.colors.text,
         headerTitleStyle: { color: theme.colors.text },
+        headerBackTitle: 'Home', // Custom back button text
       }}
     >
       <Stack.Screen
-        name="Home"
+        name="MainTabs"
         component={MainNavigator}
-        options={{ headerShown: false }}
+        options={{
+          headerShown: false,
+        }}
       />
       <Stack.Screen
         name="Detail"

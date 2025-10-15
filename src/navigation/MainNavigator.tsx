@@ -1,8 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/HomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import FavoritesScreen from '../screens/FavoritesScreen';
+import { HomeScreen } from '../screens/home';
+import { ProfileScreen } from '../screens/profile';
+import { FavoritesScreen } from '../screens/favorites';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useTheme } from '../theme/ThemeContext';
 

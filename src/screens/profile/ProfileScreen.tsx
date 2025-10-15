@@ -12,10 +12,10 @@ import {
 } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import firestore from '@react-native-firebase/firestore';
-import { useAuthStore } from '../store';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuthStore } from '../../store';
+import { useTheme } from '../../theme/ThemeContext';
 
 export default function ProfileScreen() {
   const { user, logoutUser } = useAuthStore();

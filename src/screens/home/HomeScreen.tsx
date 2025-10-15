@@ -6,21 +6,26 @@ import {
   StyleSheet,
   TouchableOpacity,
   Text,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import HomeHeader from '../components/HomeHeader';
-import AnimeGrid from '../components/AnimeGrid';
-import { getSeasonNow, getTopAnime, getUpcomingAnime } from '../services';
-import { Anime } from '../types/jikan';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import type { MainStackParamList } from '../navigation/types';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAuthStore } from '../store';
-import AnimeRecommendationCarousel from '../components/AnimeRecommendationCarousel';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { MainStackParamList } from '../../navigation/types';
+import { Anime } from '../../types/jikan';
+import { getSeasonNow, getTopAnime, getUpcomingAnime } from '../../services';
+import { useAuthStore } from '../../store';
+import { useApi } from '../../hooks/useApi';
+import {
+  AnimeGrid,
+  AnimeRecommendationCarousel,
+  HomeHeader,
+} from './components';
+import { COLORS, SPACING } from '../../constants';
+import { useTheme } from '../../theme/ThemeContext';
 
-type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'Home'>;
+type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'MainTabs'>;
 
 type AnimeCategory = {
   id: string;
@@ -39,41 +44,96 @@ export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { user } = useAuthStore();
   const { theme } = useTheme();
-  const [loading, setLoading] = useState(true);
   const [animeList, setAnimeList] = useState<Anime[]>([]);
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+  const [cache, setCache] = useState<Map<string, Anime[]>>(new Map());
+  const [refreshing, setRefreshing] = useState(false);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
+
+  // Use useApi hook for better state management
+  const { data, loading, error, execute } = useApi<{ data?: Anime[] }>();
 
   const fetchAnimeByCategory = React.useCallback(
     async (category: AnimeCategory) => {
       if (!user) return;
-      setLoading(true);
+
+      // Check cache first
+      const cacheKey = `${category.id}-${user.uid}`;
+      if (cache.has(cacheKey)) {
+        console.log('📋 Using cached data for:', category.title);
+        setAnimeList(cache.get(cacheKey)!);
+        return;
+      }
+
       try {
-        const response = await category.fetch();
-        setAnimeList(response.data || []);
+        console.log('🌐 Fetching data for:', category.title);
+        const response = await execute(() => category.fetch());
+        const animeData = response?.data || [];
+        setAnimeList(animeData);
+
+        // Update cache
+        setCache(prev => new Map(prev).set(cacheKey, animeData));
       } catch (err) {
         console.log('❌ Fetch error:', err);
-      } finally {
-        setLoading(false);
+        setAnimeList([]);
       }
     },
-    [user],
+    [user, cache], // Remove execute from dependencies to prevent re-creation
   );
 
+  // Only fetch when category changes
   useEffect(() => {
     fetchAnimeByCategory(selectedCategory);
-  }, [selectedCategory, fetchAnimeByCategory]);
+  }, [selectedCategory]); // Remove fetchAnimeByCategory from dependencies
 
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchAnimeByCategory(selectedCategory);
-    }, [fetchAnimeByCategory, selectedCategory]),
-  );
+  // Remove useFocusEffect to prevent duplicate calls
+  // Data will be loaded from cache or initial fetch
+
+  // Pull to refresh handler
+  const onRefresh = React.useCallback(async () => {
+    if (!user) return;
+
+    setRefreshing(true);
+
+    try {
+      console.log('🔄 Refreshing all data...');
+
+      // Clear cache to force fresh data
+      setCache(new Map());
+
+      // Refetch current category
+      const response = await execute(() => selectedCategory.fetch());
+      const animeData = response?.data || [];
+      setAnimeList(animeData);
+
+      // Update cache with fresh data
+      const cacheKey = `${selectedCategory.id}-${user.uid}`;
+      setCache(prev => new Map(prev).set(cacheKey, animeData));
+
+      console.log('✅ Data refreshed successfully');
+    } catch (err) {
+      console.log('❌ Refresh error:', err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [user, selectedCategory, execute]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+            title="Pull to refresh"
+            titleColor={theme.colors.text}
+          />
+        }
+      >
         <HomeHeader
           onSelectAnime={(id: number) =>
             navigation.navigate('Detail', { mal_id: id })
@@ -111,7 +171,7 @@ export default function HomeScreen() {
 
         {loading ? (
           <View style={styles.loading}>
-            <ActivityIndicator size="large" color="#00b4d8" />
+            <ActivityIndicator size="large" color={COLORS.primary} />
           </View>
         ) : (
           <>
@@ -163,7 +223,7 @@ const createStyles = (theme: Theme) =>
       marginTop: 24,
     },
     categoryContent: {
-      paddingHorizontal: 16,
+      paddingHorizontal: SPACING.md,
     },
     categoryBadge: {
       paddingHorizontal: 16,

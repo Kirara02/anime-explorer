@@ -39,20 +39,28 @@ class ApiClient {
       async error => {
         console.error('API Error:', error.response?.status, error.message);
 
-        // Handle rate limiting (429)
+        // Handle rate limiting (429) with exponential backoff
         if (error.response?.status === 429) {
-          const retryAfter = error.response.headers['retry-after'] || '2';
-          const delayMs = parseInt(retryAfter) * 1000 || 2000;
-
-          console.log(`Rate limited. Retrying in ${delayMs}ms...`);
-
-          // Wait before retrying
-          await new Promise<void>(resolve => setTimeout(resolve, delayMs));
-
-          // Retry the request
           const config = error.config;
-          if (config) {
+          if (!config) return Promise.reject(error);
+
+          const retryCount = config._retryCount || 0;
+
+          // Max 3 retries to prevent infinite loops
+          if (retryCount < 3) {
+            // Exponential backoff: 2s, 4s, 8s
+            const delayMs = Math.pow(2, retryCount) * 1000;
+            config._retryCount = retryCount + 1;
+
+            console.log(`Rate limited. Retrying in ${delayMs}ms... (attempt ${retryCount + 1}/3)`);
+
+            // Wait before retrying
+            await new Promise<void>(resolve => setTimeout(resolve, delayMs));
+
+            // Retry the request
             return this.client.request(config);
+          } else {
+            console.log('Max retries reached. Giving up.');
           }
         }
 

@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
-import SearchModal from './SearchModal';
-import { useAuthStore } from '../store';
-import { useTheme } from '../theme/ThemeContext';
 import type { Theme } from '@react-navigation/native';
+import { useAuthStore } from '../../../store';
+import { useTheme } from '../../../theme/ThemeContext';
+import { SearchModal } from '../../../components';
 
 export default function HomeHeader({
   onSelectAnime,
