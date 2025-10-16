@@ -21,10 +21,10 @@ export default function HomeHeader({
       <View style={styles.left}>
         <Image
           source={{
-            uri: user?.photoURL,
+            uri: user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Guest')}&background=random&color=fff&size=256&format=png`,
           }}
           style={styles.avatar}
-          onError={e => console.error(e)}
+          onError={e => console.error('Image load error:', e)}
         />
 
         <View>

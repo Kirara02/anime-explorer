@@ -8,7 +8,7 @@ import { useTheme } from '../theme/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
-export default function MainNavigator() {
+export default function MainTabNavigator() {
   const { theme } = useTheme();
 
   return (

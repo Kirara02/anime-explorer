@@ -1,4 +1,4 @@
-import firestore from '@react-native-firebase/firestore';
+import { getFirestore, collection, doc, setDoc, deleteDoc, getDoc, getDocs, query, orderBy, onSnapshot } from '@react-native-firebase/firestore';
 import { Anime } from '../types/jikan';
 
 export interface FavoriteAnime extends Anime {
@@ -11,17 +11,13 @@ class FavoritesService {
   // Add anime to favorites
   async addToFavorites(userId: string, anime: Anime): Promise<void> {
     try {
+      const firestore = getFirestore();
       const favoriteData: FavoriteAnime = {
         ...anime,
         addedAt: new Date(),
       };
 
-      await firestore()
-        .collection(this.collection)
-        .doc(userId)
-        .collection('anime')
-        .doc(anime.mal_id.toString())
-        .set(favoriteData);
+      await setDoc(doc(collection(firestore, this.collection), userId, 'anime', anime.mal_id.toString()), favoriteData);
 
       console.log('✅ Added to favorites:', anime.title);
     } catch (error) {
@@ -33,12 +29,8 @@ class FavoritesService {
   // Remove anime from favorites
   async removeFromFavorites(userId: string, animeId: number): Promise<void> {
     try {
-      await firestore()
-        .collection(this.collection)
-        .doc(userId)
-        .collection('anime')
-        .doc(animeId.toString())
-        .delete();
+      const firestore = getFirestore();
+      await deleteDoc(doc(collection(firestore, this.collection), userId, 'anime', animeId.toString()));
 
       console.log('✅ Removed from favorites:', animeId);
     } catch (error) {
@@ -50,14 +42,11 @@ class FavoritesService {
   // Check if anime is favorited
   async isFavorited(userId: string, animeId: number): Promise<boolean> {
     try {
-      const doc = await firestore()
-        .collection(this.collection)
-        .doc(userId)
-        .collection('anime')
-        .doc(animeId.toString())
-        .get();
+      const firestore = getFirestore();
+      const docRef = doc(collection(firestore, this.collection), userId, 'anime', animeId.toString());
+      const docSnap = await getDoc(docRef);
 
-      return doc.exists();
+      return docSnap.exists();
     } catch (error) {
       console.error('❌ Error checking favorite status:', error);
       return false;
@@ -67,15 +56,15 @@ class FavoritesService {
   // Get all favorites for a user
   async getFavorites(userId: string): Promise<FavoriteAnime[]> {
     try {
-      const snapshot = await firestore()
-        .collection(this.collection)
-        .doc(userId)
-        .collection('anime')
-        .orderBy('addedAt', 'desc')
-        .get();
+      const firestore = getFirestore();
+      const q = query(
+        collection(firestore, this.collection, userId, 'anime'),
+        orderBy('addedAt', 'desc')
+      );
+      const snapshot = await getDocs(q);
 
       const favorites: FavoriteAnime[] = [];
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc: any) => {
         favorites.push(doc.data() as FavoriteAnime);
       });
 
@@ -92,23 +81,25 @@ class FavoritesService {
     userId: string,
     callback: (favorites: FavoriteAnime[]) => void,
   ) {
-    return firestore()
-      .collection(this.collection)
-      .doc(userId)
-      .collection('anime')
-      .orderBy('addedAt', 'desc')
-      .onSnapshot(
-        snapshot => {
-          const favorites: FavoriteAnime[] = [];
-          snapshot.forEach(doc => {
-            favorites.push(doc.data() as FavoriteAnime);
-          });
-          callback(favorites);
-        },
-        error => {
-          console.error('❌ Error subscribing to favorites:', error);
-        },
-      );
+    const firestore = getFirestore();
+    const q = query(
+      collection(firestore, this.collection, userId, 'anime'),
+      orderBy('addedAt', 'desc')
+    );
+
+    return onSnapshot(
+      q,
+      (snapshot: any) => {
+        const favorites: FavoriteAnime[] = [];
+        snapshot.forEach((doc: any) => {
+          favorites.push(doc.data() as FavoriteAnime);
+        });
+        callback(favorites);
+      },
+      error => {
+        console.error('❌ Error subscribing to favorites:', error);
+      },
+    );
   }
 
   // Toggle favorite status

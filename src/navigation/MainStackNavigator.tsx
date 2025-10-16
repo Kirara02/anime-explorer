@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from './types';
-import MainNavigator from './MainNavigator';
+import MainTabNavigator from './MainTabNavigator';
 import { DetailScreen } from '../screens/detail';
 import { CategoryListScreen } from '../screens/category';
 import { useTheme } from '../theme/ThemeContext';
@@ -22,7 +22,7 @@ export default function MainStackNavigator() {
     >
       <Stack.Screen
         name="MainTabs"
-        component={MainNavigator}
+        component={MainTabNavigator}
         options={{
           headerShown: false,
         }}

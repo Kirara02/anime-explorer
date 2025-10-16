@@ -1,6 +1,8 @@
-import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile, onAuthStateChanged } from '@react-native-firebase/auth';
+import { getFirestore, collection, doc, getDoc, setDoc, serverTimestamp, updateDoc } from '@react-native-firebase/firestore';
+import type { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
+import { uploadImageToCloudinary } from './cloudinary_service';
 
 export type AuthError = {
   code: string;
@@ -26,14 +28,13 @@ export type AppUser = {
 // 🔹 Fungsi Login
 export const login = async (email: string, password: string) => {
   try {
-    const userCred = await auth().signInWithEmailAndPassword(email, password);
+    const auth = getAuth();
+    const userCred = await signInWithEmailAndPassword(auth, email, password);
 
     // 🔹 Ambil data user dari Firestore
-    const doc = await firestore()
-      .collection('users')
-      .doc(userCred.user.uid)
-      .get();
-    const data = doc.data();
+    const firestore = getFirestore();
+    const userDoc = await getDoc(doc(collection(firestore, 'users'), userCred.user.uid));
+    const data = userDoc.data() as AppUser | undefined;
 
     const user: AppUser = {
       uid: userCred.user.uid,
@@ -51,16 +52,18 @@ export const login = async (email: string, password: string) => {
 };
 
 // 🔹 Fungsi Signup
-// 🔹 Fungsi Signup
 export const signup = async (name: string, email: string, password: string) => {
   try {
-    const { user } = await auth().createUserWithEmailAndPassword(
+    const auth = getAuth();
+    const { user } = await createUserWithEmailAndPassword(
+      auth,
       email.trim(),
       password,
     );
 
-    await user.updateProfile({ displayName: name });
+    await updateProfile(user, { displayName: name });
 
+    const firestore = getFirestore();
     const newUser: AppUser = {
       uid: user.uid,
       name,
@@ -69,10 +72,10 @@ export const signup = async (name: string, email: string, password: string) => {
         name,
       )}`,
       favorites: [],
-      createdAt: firestore.FieldValue.serverTimestamp() as any, // avoid type mismatch
+      createdAt: serverTimestamp() as any, // avoid type mismatch
     };
 
-    await firestore().collection('users').doc(user.uid).set(newUser);
+    await setDoc(doc(collection(firestore, 'users'), user.uid), newUser);
 
     // ✅ return juga user-nya
     return { success: true, user: newUser };
@@ -85,7 +88,8 @@ export const signup = async (name: string, email: string, password: string) => {
 // 🔹 Fungsi Logout
 export const logout = async () => {
   try {
-    await auth().signOut();
+    const auth = getAuth();
+    await signOut(auth);
     return { success: true };
   } catch (error) {
     return { success: false, error: (error as Error).message };
@@ -94,13 +98,12 @@ export const logout = async () => {
 
 // 🔹 Fungsi Get User (gabung data Auth + Firestore)
 export const getUser = async (): Promise<AppUser | null> => {
-  const currentUser = auth().currentUser;
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
   if (!currentUser) return null;
 
-  const userDoc = await firestore()
-    .collection('users')
-    .doc(currentUser.uid)
-    .get();
+  const firestore = getFirestore();
+  const userDoc = await getDoc(doc(collection(firestore, 'users'), currentUser.uid));
 
   const data = userDoc.exists()
     ? (userDoc.data() as AppUser | undefined)
@@ -114,6 +117,35 @@ export const getUser = async (): Promise<AppUser | null> => {
     createdAt: data?.createdAt,
     favorites: data?.favorites || [],
   };
+};
+
+// 🔹 Fungsi Update Photo URL
+export const updatePhotoURL = async (imageUri: string): Promise<{ success: boolean; photoURL?: string; error?: string }> => {
+  try {
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      return { success: false, error: 'User not authenticated' };
+    }
+
+    // Upload image to Cloudinary
+    const cloudinaryUrl = await uploadImageToCloudinary(imageUri);
+
+    // Update Firebase Auth profile
+    await updateProfile(currentUser, { photoURL: cloudinaryUrl });
+
+    // Update Firestore user document
+    const firestore = getFirestore();
+    await updateDoc(doc(collection(firestore, 'users'), currentUser.uid), {
+      photoURL: cloudinaryUrl,
+      lastActive: serverTimestamp(),
+    });
+
+    return { success: true, photoURL: cloudinaryUrl };
+  } catch (error) {
+    console.error('Update photo URL error:', error);
+    return { success: false, error: (error as Error).message };
+  }
 };
 
 // 🔹 Parsing Error

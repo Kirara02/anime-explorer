@@ -9,17 +9,20 @@ import {
   ScrollView,
   ActivityIndicator,
   Modal,
+  Platform,
 } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import firestore from '@react-native-firebase/firestore';
 import type { Theme } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { useAuthStore } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
 
 export default function ProfileScreen() {
-  const { user, logoutUser } = useAuthStore();
+  const { user, logoutUser, updateUserPhoto } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [themeModalVisible, setThemeModalVisible] = useState(false);
   const { theme, toggleTheme, themeMode } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
@@ -38,9 +41,83 @@ export default function ProfileScreen() {
 
   const handleEditProfile = () => {
     Alert.alert(
-      'Coming Soon 🎨',
-      'Edit profile feature will be available soon!',
+      'Change Profile Photo',
+      'Choose an option to update your profile picture',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Camera',
+          onPress: handleTakePhoto,
+        },
+        {
+          text: 'Gallery',
+          onPress: handleChooseFromGallery,
+        },
+      ],
     );
+  };
+
+  const handleTakePhoto = () => {
+    const options = {
+      mediaType: 'photo' as const,
+      quality: 0.8 as any,
+      includeBase64: false,
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+
+    launchCamera(options, handleImagePickerResponse);
+  };
+
+  const handleChooseFromGallery = () => {
+    const options = {
+      mediaType: 'photo' as const,
+      quality: 0.8 as any,
+      includeBase64: false,
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+
+    launchImageLibrary(options, handleImagePickerResponse);
+  };
+
+  const handleImagePickerResponse = async (response: any) => {
+    if (response.didCancel) {
+      return;
+    }
+
+    if (response.errorMessage) {
+      Alert.alert('Error', response.errorMessage);
+      return;
+    }
+
+    if (response.assets && response.assets[0]) {
+      const imageUri = response.assets[0].uri;
+      if (imageUri) {
+        await handleUploadPhoto(imageUri);
+      }
+    }
+  };
+
+  const handleUploadPhoto = async (imageUri: string) => {
+    try {
+      setUploadingPhoto(true);
+      const result = await updateUserPhoto(imageUri);
+
+      if (result.success) {
+        Alert.alert('Success 🎉', 'Profile photo updated successfully!');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to update profile photo');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to upload photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const handleThemeSelect = (selectedTheme: 'light' | 'dark' | 'system') => {
@@ -118,8 +195,13 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={styles.editAvatarButton}
               onPress={handleEditProfile}
+              disabled={uploadingPhoto}
             >
-              <Ionicons name="camera" size={20} color="#fff" />
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="camera" size={20} color="#fff" />
+              )}
             </TouchableOpacity>
           </View>
           <Text style={styles.name}>{user.name || 'Anonymous Otaku'}</Text>

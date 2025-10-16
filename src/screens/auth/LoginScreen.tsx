@@ -71,7 +71,6 @@ export default function LoginScreen({ navigation }: Props) {
       const res = await login(email, password);
       if (res.success && res.user) {
         setUser(res.user);
-        // RootNavigator otomatis akan redirect ke MainNavigator
       } else {
         Alert.alert('Login failed 💔', res.error?.message || 'Unknown error');
       }

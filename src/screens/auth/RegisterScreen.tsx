@@ -32,7 +32,7 @@ export default function RegisterScreen({ navigation }: Props) {
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { setUser } = useAuthStore();
+  const { setUser, setRegistering } = useAuthStore();
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -75,9 +75,12 @@ export default function RegisterScreen({ navigation }: Props) {
 
     try {
       setLoading(true);
+      setRegistering(true); // Prevent navigation until user data is fully ready
+
       const res = await signup(name, email, password);
 
       if (res.success && res.user) {
+        // Wait for user data to be fully set before showing success
         setUser(res.user);
         Alert.alert('Welcome ✨', 'Account created successfully!');
       } else {
@@ -87,6 +90,7 @@ export default function RegisterScreen({ navigation }: Props) {
       Alert.alert('Error', error.message);
     } finally {
       setLoading(false);
+      setRegistering(false); // Allow navigation once process is complete
     }
   };
 
