@@ -16,6 +16,7 @@ import { AuthStackParamList } from '../../navigation/types';
 import { useAuthStore } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
 import { login } from '../../services';
+import { isValidEmail, isValidPassword } from '../../utils';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -36,23 +37,12 @@ export default function LoginScreen({ navigation }: Props) {
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const validateInputs = () => {
-    if (!email.trim()) {
-      Alert.alert('Oops 💌', 'Please enter your email address.');
-      return false;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
+    if (!isValidEmail(email)) {
       Alert.alert('Invalid Email ✉️', 'Please enter a valid email address.');
       return false;
     }
 
-    if (!password.trim()) {
-      Alert.alert('Oops 🔒', 'Please enter your password.');
-      return false;
-    }
-
-    if (password.length < 6) {
+    if (!isValidPassword(password)) {
       Alert.alert(
         'Too short 🪫',
         'Password must be at least 6 characters long.',

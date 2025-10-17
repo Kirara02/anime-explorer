@@ -20,6 +20,7 @@ import { COLORS, SPACING } from '../../constants';
 import { getAnimeDetail } from '../../services';
 import { useAuthStore } from '../../store';
 import { useFavoritesStore, useIsFavorited } from '../../store/favorites_store';
+import { formatScore, formatDate } from '../../utils';
 
 type Props = NativeStackScreenProps<MainStackParamList, 'Detail'>;
 
@@ -142,7 +143,7 @@ export default function DetailScreen({ route, navigation }: Props) {
         {anime.score && (
           <View style={styles.statItem}>
             <Ionicons name="star" size={24} color="#ffd700" />
-            <Text style={styles.statValue}>{anime.score.toFixed(2)}</Text>
+            <Text style={styles.statValue}>{formatScore(anime.score)}</Text>
             <Text style={styles.statLabel}>Score</Text>
           </View>
         )}
@@ -168,7 +169,7 @@ export default function DetailScreen({ route, navigation }: Props) {
         {renderInfoRow('Type', anime.type)}
         {renderInfoRow('Episodes', anime.episodes?.toString())}
         {renderInfoRow('Status', anime.status)}
-        {renderInfoRow('Aired', anime.aired?.string)}
+        {renderInfoRow('Aired', anime.aired?.string ? formatDate(anime.aired.string) : undefined)}
         {renderInfoRow('Duration', anime.duration)}
         {renderInfoRow('Rating', anime.rating)}
         {anime.studios &&

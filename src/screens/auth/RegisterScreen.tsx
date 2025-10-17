@@ -15,6 +15,7 @@ import { useAuthStore } from '../../store';
 import { useTheme } from '../../theme/ThemeContext';
 import { AuthStackParamList } from '../../navigation/types';
 import { signup } from '../../services';
+import { isValidEmail, isValidPassword, isValidName } from '../../utils';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -38,23 +39,17 @@ export default function RegisterScreen({ navigation }: Props) {
 
   // 🔹 Validasi input
   const validateInputs = () => {
-    if (!name.trim()) {
+    if (!isValidName(name)) {
       Alert.alert('Oops 💡', 'Please enter your full name.');
       return false;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email.trim() || !emailRegex.test(email)) {
+    if (!isValidEmail(email)) {
       Alert.alert('Oops 💌', 'Please enter a valid email address.');
       return false;
     }
 
-    if (!password) {
-      Alert.alert('Oops 🔒', 'Please enter a password.');
-      return false;
-    }
-
-    if (password.length < 6) {
+    if (!isValidPassword(password)) {
       Alert.alert(
         'Too short 🪫',
         'Password must be at least 6 characters long.',
