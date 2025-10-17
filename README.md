@@ -2,10 +2,10 @@
 
 A beautiful and feature-rich React Native anime discovery app with modern UI, dark/light theme support, and comprehensive anime information powered by Jikan API.
 
-![React Native](https://img.shields.io/badge/React%20Native-0.74.5-blue.svg)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue.svg)
-![Firebase](https://img.shields.io/badge/Firebase-18.8.0-orange.svg)
-![Zustand](https://img.shields.io/badge/Zustand-4.5.0-green.svg)
+![React Native](https://img.shields.io/badge/React%20Native-0.82.0-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue.svg)
+![Firebase](https://img.shields.io/badge/Firebase-23.4.0-orange.svg)
+![Zustand](https://img.shields.io/badge/Zustand-5.0.8-green.svg)
 
 ## ✨ Features
 
@@ -131,9 +131,9 @@ yarn start
 
 ### Tech Stack
 
-- **Framework**: React Native 0.74.5
-- **Language**: TypeScript 5.3.3
-- **State Management**: Zustand 4.5.0
+- **Framework**: React Native 0.82.0
+- **Language**: TypeScript 5.8.3
+- **State Management**: Zustand 5.0.8
 - **Navigation**: React Navigation 6.x
 - **Authentication**: Firebase Auth
 - **Database**: Firebase Firestore
