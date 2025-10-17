@@ -1,97 +1,290 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# AnimeExplorer 🌸
 
-# Getting Started
+A beautiful and feature-rich React Native anime discovery app with modern UI, dark/light theme support, and comprehensive anime information powered by Jikan API.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+![React Native](https://img.shields.io/badge/React%20Native-0.74.5-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue.svg)
+![Firebase](https://img.shields.io/badge/Firebase-18.8.0-orange.svg)
+![Zustand](https://img.shields.io/badge/Zustand-4.5.0-green.svg)
 
-## Step 1: Start Metro
+## ✨ Features
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+### 🎨 **Modern UI/UX**
+- **Dark/Light Theme Support** - Automatic theme switching with system preference
+- **Responsive Design** - Optimized for both mobile platforms
+- **Smooth Animations** - Fluid transitions and micro-interactions
+- **Material Design** - Consistent design language throughout
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+### 🔐 **Authentication**
+- **Firebase Authentication** - Secure login/signup with email/password
+- **Google Sign-in** - One-tap authentication
+- **Persistent Sessions** - Stay logged in across app restarts
 
-```sh
-# Using npm
-npm start
+### 🎯 **Anime Discovery**
+- **Rich Anime Database** - Powered by Jikan API (MyAnimeList)
+- **Advanced Search** - Find anime by title with real-time results
+- **Category Browsing** - Now Airing, Top Anime, Upcoming releases
+- **Detailed Information** - Comprehensive anime details, ratings, genres
 
-# OR using Yarn
-yarn start
-```
+### ❤️ **Favorites System**
+- **Save Favorites** - Add/remove anime to personal favorites
+- **Visual Indicators** - Heart icons show favorite status across all screens
+- **Cloud Sync** - Favorites synced across devices via Firebase
+- **Offline Access** - View favorites without internet connection
 
-## Step 2: Build and run your app
+### 🔍 **Search & Navigation**
+- **Global Search** - Search anime from any screen
+- **Infinite Scroll** - Load more results seamlessly
+- **Bottom Tab Navigation** - Easy navigation between sections
+- **Deep Linking** - Direct links to specific anime
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### 📱 **Platform Support**
+- **iOS & Android** - Native performance on both platforms
+- **Cross-platform** - Single codebase for multiple platforms
+- **Optimized Builds** - Platform-specific optimizations
 
-### Android
+## 📸 Screenshots
 
-```sh
-# Using npm
+### Authentication Flow
+| Login | Register |
+|-------|----------|
+| ![Login](docs/login.png) | ![Register](docs/register.png) |
+
+### Main App Experience
+| Home Screen | Search Modal |
+|-------------|--------------|
+| ![Home](docs/home.png) | ![Search](docs/search.png) |
+
+| Anime Detail | Category List |
+|--------------|---------------|
+| ![Detail](docs/detail.png) | ![Category](docs/category_list.png) |
+
+| Favorites | Profile |
+|-----------|---------|
+| ![Favorites](docs/favorite.png) | ![Profile](docs/profile.png) |
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** >= 18.0.0
+- **npm** or **yarn**
+- **React Native CLI**
+- **Android Studio** (for Android development)
+- **Xcode** (for iOS development)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/anime-explorer.git
+   cd anime-explorer
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Install iOS dependencies** (iOS only)
+   ```bash
+   cd ios && bundle install && bundle exec pod install
+   ```
+
+4. **Environment Setup**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Firebase configuration
+   ```
+
+5. **Firebase Configuration**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Enable Authentication and Firestore
+   - Add your Firebase config to `.env`
+
+### Running the App
+
+#### Android
+```bash
 npm run android
-
-# OR using Yarn
+# or
 yarn android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+#### iOS
+```bash
 npm run ios
-
-# OR using Yarn
+# or
 yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+#### Metro Bundler
+```bash
+npm start
+# or
+yarn start
+```
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+## 🏗️ Architecture
 
-## Step 3: Modify your app
+### Tech Stack
 
-Now that you have successfully run the app, let's make changes!
+- **Framework**: React Native 0.74.5
+- **Language**: TypeScript 5.3.3
+- **State Management**: Zustand 4.5.0
+- **Navigation**: React Navigation 6.x
+- **Authentication**: Firebase Auth
+- **Database**: Firebase Firestore
+- **API**: Jikan API (MyAnimeList)
+- **Icons**: Ionicons via @react-native-vector-icons
+- **Styling**: StyleSheet with Theme Context
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+### Project Structure
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+```
+src/
+├── components/          # Reusable UI components
+│   ├── shared/         # Shared components (ErrorBoundary)
+│   └── SearchModal.tsx # Global search modal
+├── screens/            # Screen components
+│   ├── auth/          # Authentication screens
+│   ├── home/          # Home screen with components
+│   ├── detail/        # Anime detail screen
+│   ├── category/      # Category list screen
+│   ├── favorites/     # Favorites screen
+│   └── profile/       # User profile screen
+├── navigation/         # Navigation configuration
+├── services/           # API services and utilities
+│   ├── api/           # Base API configuration
+│   └── favorites_service.ts # Firebase favorites
+├── store/             # State management (Zustand)
+├── theme/             # Theme configuration
+├── types/             # TypeScript type definitions
+├── utils/             # Utility functions
+└── constants/         # App constants
+```
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+### Key Components
 
-## Congratulations! :tada:
+#### Theme System
+- **ThemeContext**: React Context for theme management
+- **Theme Persistence**: Automatic theme saving to AsyncStorage
+- **Dynamic Theming**: Real-time theme switching
 
-You've successfully run and modified your React Native App. :partying_face:
+#### State Management
+- **Auth Store**: User authentication state
+- **Favorites Store**: Anime favorites with Firebase sync
+- **Theme Store**: Theme preferences persistence
 
-### Now what?
+#### API Layer
+- **Jikan Service**: MyAnimeList API integration
+- **Custom Hooks**: `useApi` for consistent API calls
+- **Error Handling**: Comprehensive error boundaries
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## 🔧 Configuration
 
-# Troubleshooting
+### Environment Variables (.env)
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+```env
+# Cloudinary Configuration (for image uploads)
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_BASE_FOLDER=anime-explorer-app
 
-# Learn More
+# API Configuration
+JIKAN_BASE_URL=https://api.jikan.moe/v4
+```
 
-To learn more about React Native, take a look at the following resources:
+### Cloudinary Setup
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+1. **Create Cloudinary Account** at [Cloudinary](https://cloudinary.com/)
+2. **Get your credentials** from Dashboard
+3. **Update .env** with your Cloudinary configuration
+4. **Configure upload presets** for image optimization
+
+## 📱 Features in Detail
+
+### 🎨 Theme System
+- **Automatic Theme Detection**: Follows system dark/light mode
+- **Manual Theme Toggle**: Override system preference
+- **Persistent Settings**: Theme choice saved across sessions
+- **Smooth Transitions**: Animated theme switching
+
+### 🔍 Search Functionality
+- **Real-time Search**: Instant results as you type
+- **Infinite Pagination**: Load more results on scroll
+- **Rich Results**: Anime posters, titles, ratings
+- **Quick Navigation**: Tap to view anime details
+
+### ❤️ Favorites Management
+- **One-tap Favorite**: Heart button on all anime cards
+- **Visual Feedback**: Red heart indicates favorited anime
+- **Cloud Synchronization**: Favorites sync across devices
+- **Offline Viewing**: Access favorites without internet
+
+### 📊 Anime Information
+- **Comprehensive Details**: Title, synopsis, ratings, genres
+- **Visual Media**: High-quality anime posters
+- **External Links**: Direct links to MyAnimeList
+- **Trailer Support**: Watch anime trailers (when available)
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run linting
+npm run lint
+
+# Type checking
+npm run type-check
+```
+
+## 📦 Build & Deployment
+
+### Android APK
+```bash
+cd android
+./gradlew assembleRelease
+```
+
+### iOS Build
+```bash
+cd ios
+xcodebuild -workspace AnimeExplorer.xcworkspace -scheme AnimeExplorer -configuration Release
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Jikan API** - MyAnimeList API wrapper
+- **React Native Community** - Amazing React Native ecosystem
+- **Firebase** - Backend services and authentication
+- **React Navigation** - Navigation library
+- **Ionicons** - Beautiful icon set
+
+## 📞 Support
+
+For support, email kirara@example.com or join our Discord community.
+
+---
+
+**Made with ❤️ by AnimeExplorer Team**
