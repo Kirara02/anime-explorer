@@ -194,7 +194,7 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 CLOUDINARY_BASE_FOLDER=anime-explorer-app
 
-# API Configuration
+# API Configuration (optional - defaults to Jikan API)
 JIKAN_BASE_URL=https://api.jikan.moe/v4
 ```
 

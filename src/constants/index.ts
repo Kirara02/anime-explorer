@@ -1,4 +1,6 @@
-export const API_BASE_URL = 'https://api.jikan.moe/v4';
+import { JIKAN_BASE_URL } from '@env';
+
+export const API_BASE_URL = JIKAN_BASE_URL;
 
 export const COLORS = {
   primary: '#00b4d8',
